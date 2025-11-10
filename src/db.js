@@ -1,19 +1,20 @@
 import mysql from "mysql2/promise";
-import { DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT } from "./config.js";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const conmysql = mysql.createPool({
-  host: DB_HOST,
-  database: DB_NAME,
-  user: DB_USER,
-  password: DB_PASSWORD,
-  port: DB_PORT,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
 
 // Verificar conexión
 (async () => {
   try {
     const connection = await conmysql.getConnection();
-    console.log("✅ Conectado exitosamente a la base de datos:", DB_NAME);
+    console.log("✅ Conectado exitosamente a la base de datos:", process.env.DB_NAME);
     connection.release();
   } catch (err) {
     console.error("❌ Error al conectar con la base de datos:", err.message);

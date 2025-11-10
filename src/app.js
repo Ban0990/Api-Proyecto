@@ -3,7 +3,8 @@ import cors from 'cors';
 import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
+import dotenv from 'dotenv';
+dotenv.config();
 // Importar todas las rutas
 import rolRoutes from './routes/rol.routes.js';
 import usuarioRoutes from './routes/usuario.routes.js';
@@ -57,6 +58,12 @@ app.use('/api/auditorias', auditoriaRoutes);
 // 🧭 Ruta de prueba del servidor
 app.get('/', (req, res) => {
   res.json({ message: 'API de Gestión de Alimentación de Camarones funcionando correctamente 🦐' });
+});
+
+// Inicio del servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });
 
 // ⚠️ Manejo de rutas no encontradas
