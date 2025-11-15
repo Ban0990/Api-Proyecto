@@ -8,7 +8,7 @@ export const getEstanques = async (req, res) => {
     const [rows] = await conmysql.query("SELECT * FROM estanque");
     res.json(rows);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener los estanques", error });
+    res.status(500).json({ message: "Error al obtener los estanques", error: error.message });
   }
 };
 
@@ -22,12 +22,13 @@ export const getEstanque = async (req, res) => {
       [req.params.id]
     );
 
-    if (rows.length === 0)
+    if (rows.length === 0) {
       return res.status(404).json({ message: "Estanque no encontrado" });
+    }
 
     res.json(rows[0]);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener el estanque", error });
+    res.status(500).json({ message: "Error al obtener el estanque", error: error.message });
   }
 };
 
@@ -36,28 +37,30 @@ export const getEstanque = async (req, res) => {
 // ===============================
 export const createEstanque = async (req, res) => {
   try {
-    const { nombre, capacidad, id_especie } = req.body;
+    const { nombre_estanque, capacidad_kg, id_especie } = req.body;
 
-    // Validaciones mínimas
-    if (!nombre || !capacidad || !id_especie) {
+    // Validación
+    if (!nombre_estanque || !capacidad_kg || !id_especie) {
       return res.status(400).json({
-        message: "Faltan datos: nombre, capacidad o id_especie",
+        message: "Faltan datos: nombre_estanque, capacidad_kg o id_especie"
       });
     }
 
     const [result] = await conmysql.query(
-      "INSERT INTO estanque (nombre, capacidad, id_especie) VALUES (?, ?, ?)",
-      [nombre, capacidad, id_especie]
+      "INSERT INTO estanque (nombre_estanque, capacidad_kg, id_especie) VALUES (?, ?, ?)",
+      [nombre_estanque, capacidad_kg, id_especie]
     );
 
-    res.json({
-      id: result.insertId,
-      nombre,
-      capacidad,
-      id_especie,
-    });
+    // Obtener el registro recién creado
+    const [nuevo] = await conmysql.query(
+      "SELECT * FROM estanque WHERE id_estanque = ?",
+      [result.insertId]
+    );
+
+    res.json(nuevo[0]);
+
   } catch (error) {
-    res.status(500).json({ message: "Error al crear el estanque", error });
+    res.status(500).json({ message: "Error al crear el estanque", error: error.message });
   }
 };
 
@@ -66,19 +69,26 @@ export const createEstanque = async (req, res) => {
 // ===============================
 export const updateEstanque = async (req, res) => {
   try {
-    const { nombre, capacidad, id_especie } = req.body;
+    const { nombre_estanque, capacidad_kg, id_especie } = req.body;
 
     const [result] = await conmysql.query(
-      "UPDATE estanque SET nombre=?, capacidad=?, id_especie=? WHERE id_estanque=?",
-      [nombre, capacidad, id_especie, req.params.id]
+      "UPDATE estanque SET nombre_estanque=?, capacidad_kg=?, id_especie=? WHERE id_estanque=?",
+      [nombre_estanque, capacidad_kg, id_especie, req.params.id]
     );
 
-    if (result.affectedRows === 0)
+    if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Estanque no encontrado" });
+    }
 
-    res.json({ message: "Estanque actualizado correctamente" });
+    const [actualizado] = await conmysql.query(
+      "SELECT * FROM estanque WHERE id_estanque = ?",
+      [req.params.id]
+    );
+
+    res.json(actualizado[0]);
+
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar el estanque", error });
+    res.status(500).json({ message: "Error al actualizar el estanque", error: error.message });
   }
 };
 
@@ -92,11 +102,13 @@ export const deleteEstanque = async (req, res) => {
       [req.params.id]
     );
 
-    if (result.affectedRows === 0)
+    if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Estanque no encontrado" });
+    }
 
     res.json({ message: "Estanque eliminado correctamente" });
+
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar el estanque", error });
+    res.status(500).json({ message: "Error al eliminar el estanque", error: error.message });
   }
 };
